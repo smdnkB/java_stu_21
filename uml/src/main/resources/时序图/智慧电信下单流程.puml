@@ -1,0 +1,76 @@
+@startuml
+participant 支付中心 as pay
+participant MQ as mq
+participant PC as pc
+participant service as svc
+participant redis as redis
+participant db as db
+participant inst as inst
+
+== 定位客户 ==
+pc->svc:查询客户信息
+
+note left: 根据客户id|身份证|产品实例Id 获取客户信息
+pc<--svc:返回客户信息
+note left: 保存客户信息
+
+== 选择商品|礼包|套餐订购 ==
+
+pc->svc: 请求订单生成接口
+activate svc
+note left: 浏览礼包列表,点击订购
+note right: 生成订单报文;购物车报文
+svc->redis: 报文保存redis
+deactivate svc
+pc<--redis:生单完成
+pc->redis:获取购物车报文
+pc<--redis:返回物车报文
+note left
+根据购物车报文生成前端页面
+比如根据uim组件生成uim卡的校验框
+end note
+
+
+pc->svc:全量提交
+activate svc
+note left: 页面填写完点下一步,触发全量提交
+svc->redis:获取订单报文
+svc<--redis:返回订单报文
+svc-->svc: 填单页面填写的内容增量存入订单报文
+svc->redis:报文保存redis
+deactivate svc
+
+== 认证 ==
+pc-->pc:调认证服务
+pc->redis: 认证信息增量存入订单报文到redis
+== 签名 ==
+pc-->pc:签字
+pc->redis: 签字信息增量存入订单报文到redis
+== 提交受理 ==
+pc->mq:启动流程中心
+mq->svc: 1. 请求订单入库
+svc->redis:获取订单报文
+svc<--redis:返回订单报文
+svc->svc: 重组订单数据
+svc->db:订单入库
+mq->mq:支付卡单(流程暂停)
+== 支付 ==
+pc->pay: 请求生成支付二维码
+pc<--pay: 返回支付二维码
+pc<--pc: 客户扫码支付
+pc->pay: 付款
+pay->svc:收款成功后回调
+note right
+付款请求不靠谱, 依赖回调来判断是否支付
+成功.
+回调也可能丢失, 还需要定时任务对账兜底
+end note
+svc->db:更新订单支付状态
+svc->mq:支付完成(流程继续)
+
+mq->inst:资产归档
+inst->svc: 查订单数据
+inst<--svc: 返回订单数据
+inst<--inst: 订单数据最终归档
+
+@enduml

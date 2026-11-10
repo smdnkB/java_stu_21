@@ -1,0 +1,14 @@
+@startuml
+|ui|
+start
+:违约金试算;
+|service|
+:违约金试算接口;
+|ui|
+->拼接参数;
+:一键申请违约金;
+
+
+end
+
+@enduml

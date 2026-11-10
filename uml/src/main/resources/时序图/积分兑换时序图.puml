@@ -1,0 +1,60 @@
+@startuml
+title 积分兑换订单受理提交流程
+
+participant "PC" as pc
+participant "订单服务\n(Order Service)" as svc
+participant "积分服务\n(Point Service)" as jf
+participant "计费服务" as jff
+
+== 受理提交阶段 ==
+
+pc -> svc : 提交积分兑换订单\n（含商品列表）
+activate pc
+note left
+  兑换订单报文中包含 <b>兑换商品节点</b>
+end note
+
+
+
+svc-->svc: <color:red><b>【处理宽带商品】</b></color>
+note left
+  判断兑换商品列表是否有宽带
+  如果有: 调用资产 获取宽带账号,用来送积分
+end note
+
+svc -> svc : 解析商品列表，生成兑换日志\n（每商品一条日志）
+note left
+  日志初始状态：<b>res_code = 1</b>
+  含义：未调用积分服务接口
+
+end note
+
+svc -> svc : 填充默认状态<color:red><b>【预记录】</b></color>并持久化到数据库
+
+
+svc -> jf : 调用积分兑换接口\n<color:red><b>【关键调用】</b></color>
+activate svc
+jf->jff : 积分调用计费,同步优惠信息
+jf<--jff : 计费响应
+jf --> svc : 返回 orderList\n（含各商品兑换状态与异常信息）
+deactivate  svc
+svc -> svc : 解析 orderList，更新日志状态\n（res_code ← 商品实际状态）
+note right
+  更新依据：orderList 中每个商品的
+  - 兑换结果码
+  - 异常描述（如有）
+end note
+
+svc -> svc : 保存日志至数据库\n（独立事务，不随主订单回滚）
+
+svc-->pc: 受理提交接口响应
+note left
+兑换失败订单会被拦截，
+成功和部分成功订单会下去
+（部分成功前台有提醒）
+end note
+
+deactivate pc
+
+
+@enduml

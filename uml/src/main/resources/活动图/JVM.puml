@@ -1,0 +1,23 @@
+@startuml
+start
+
+->Person.java;
+:编译;
+note left
+编译原理:
+词法分析-语法分析-
+语法树-字节码生成器- .class(二进制)
+
+.class文件结构是固定的
+end note
+->Person.class;
+:java;
+
+->Person.class;
+:JVM;
+
+
+
+stop
+
+@enduml

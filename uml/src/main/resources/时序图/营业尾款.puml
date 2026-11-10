@@ -1,0 +1,71 @@
+@startuml:sequence
+participant pc_web as pc
+participant order_service as  ord
+participant OA as  oa
+==进入审批单页面==
+pc->ord:查询已有审批单[file:./test.puml]
+pc<--ord:返回已有审批单
+note right
+默认根据当前工号,
+支持条件查询
+支持分页
+end note
+
+==新建审批单==
+pc->ord:请求审批流水
+pc<--ord:生成并返回审批流水
+
+pc->ord:获取OA经办人
+ord->oa:获取OA经办人[file:./test.puml]
+ord<-oa:返回OA经办人
+pc<--ord:返回OA经办人
+pc-->pc: 补充填写数据
+pc->ord:创建审批单;
+note right
+校验场景
+校验申请号码是否存在
+校验客户是否非政企
+新增审批数据(默认次数3,记录接入号数量,默认新建状态)
+新增审批接入号数据
+end note
+ord->oa:创建审批单
+note right
+审批单状态更新为审批中
+end note
+...
+oa->ord:OA审批通过回调更新审批单状态
+note left
+审批单状态更新为通过|拒绝
+end note
+
+==实名制页面==
+pc->ord:实名制页面校验审批单
+note right
+校验场景
+校验审批单状态
+校验审批单次数
+校验号码是否存在
+校验客户是否非政企
+校验审批单号码是否包含订单中号码
+end note
+pc<-ord:返回审批单校验结果
+
+pc->ord:(实名制)写入订单属性(远程签名或者免签名)
+note right
+实名制实现签名类型互斥
+写入一个签名属性时删除其他类型签名属性
+end note
+
+...
+pc-->ord:订单入库接口(新增审批单逻辑)
+note right
+当订单有免签属性,校验免签和远程签名是否互斥
+新建审批单和订单关系数据
+扣减审批单使用次数
+end note
+
+
+
+
+
+@enduml

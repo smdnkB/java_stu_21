@@ -1,0 +1,24 @@
+@startuml
+|ui|
+start
+->进入商品详情页;
+:点击下单;
+|order|
+:创建订单;
+:获取key;
+|redis|
+:获取key;
+|order|
+if (重复下单?) is (yes) then
+  :拒绝下单;
+  detach
+else (no)
+  :生成key;
+  |redis|
+  :存key;
+  |order|
+  :;
+endif
+
+end
+@enduml

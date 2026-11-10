@@ -1,0 +1,31 @@
+@startuml
+pc-->pc:浏览商品
+pc-->pc:进入商品详情
+
+
+pc-->pc:点击立即购买
+
+pc->redis: 生成订单存入缓存
+note left
+如何避免 重复点击购买导致重复生单?
+
+end note
+pc-->pc:选择地址-选择商品规格
+pc->redis: 地址和规格增量写入redis订单
+pc-->pc:点支付
+pc->db: 订单从缓存到数据库(状态未支付)
+alt 1. 成功支付
+pc-->pc:支付完成
+pc->db:更新订单状态(已支付)
+end
+alt 2. 取消支付
+pc-->pc:支付失败
+pc-->pc:跳转待支付页面
+end
+alt 3. 取消支付后支付
+pc-->pc:支付失败
+pc-->pc:跳转待支付页面
+pc-->pc:待支付页面支付
+pc->db:更新订单状态(已支付)
+end
+@enduml

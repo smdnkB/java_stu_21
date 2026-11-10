@@ -1,0 +1,16 @@
+spring:
+  application:
+    name: service01
+  cloud:
+    nacos:
+      username: nacos # 开启认证需要账号密码
+      password: nacos # 开启认证需要账号密码
+      config:
+        server-addr: 192.168.0.8:8848
+        file-extension: yaml # 默认使用配置中心的文件名：${prefix}-${spring.profiles.active}.${file-extension}
+      discovery: # 服务注册与发现
+        server-addr: 192.168.0.8:8848
+        group: java_stu_21 # 注册服务时的分组名
+
+server:
+  port: 8081

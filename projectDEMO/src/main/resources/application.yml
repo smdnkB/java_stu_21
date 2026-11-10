@@ -1,0 +1,26 @@
+spring:
+  application:
+    name: testDemo
+jetcache:
+  statIntervalMinutes: 1
+  areaInCacheName: false
+  local:
+    default:
+      type: caffeine
+      keyConvertor: fastjson2
+  remote:
+    default:
+      type: redis # redision
+      keyConvertor: fastjson2
+      broadcastChannel: ${spring.application.name}
+      keyPrefix: ${spring.application.name}
+      valueEncoder: java
+      valueDecoder: java
+      poolConfig:
+        minIdle: 5
+        maxIdle: 20
+        maxTotal: 20
+      defaultExpireInMillis: 5000
+      database: 0
+      host: 192.168.0.8
+      port: 6379

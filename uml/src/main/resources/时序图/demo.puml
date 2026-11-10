@@ -1,0 +1,22 @@
+@startuml
+participant PC as pc
+participant service as svc
+
+== 违约金试算 ==
+pc -> svc : 违约金试算请求
+activate svc
+pc <-- svc : 违约金试算响应
+deactivate  svc
+
+== 一键申请减免券 ==
+pc-->pc : 拼接减免券入参
+pc -> svc : 申请违约金减免券请求
+activate svc
+pc <-- svc : 申请违约金减免券响应
+
+deactivate  svc
+
+== 跳转万象 ==
+pc-->pc : 点击审批单跳转万象
+
+@enduml

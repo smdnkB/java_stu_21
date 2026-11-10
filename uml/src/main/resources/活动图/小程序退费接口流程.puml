@@ -1,0 +1,47 @@
+@startuml
+|ui|
+start
+|so-mini|
+:查询小程序订单列表;
+
+|ui|
+:未收费订单;
+    note right
+        订单状态未收费
+    end note
+    ->点击取消订单;
+|so-mini|
+:作废订单;
+ note right
+    已收费和版本不为0的不允许作废
+ end note
+->判断是否允许作废;
+ if (允许作废?) is (yes) then
+   if (已支付?) is (yes) then
+     :调用支付中心退费;
+       note right
+         实时返回退费结果
+         ====
+         退费成功; 退费失败
+       end note
+     :更新PRE_PAY_INFO状态为;
+         note right
+           状态更新为 3 已退费
+         end note
+   else (no)
+     :不能退费;
+        note right
+        不执行退费逻辑
+        end note
+   endif
+   ->继续作废订单中其它流程;
+ else (no)
+   :拒绝作废订单;
+   detach
+ endif
+ :作废订单;
+
+
+|ui|
+stop
+@enduml

@@ -1,0 +1,35 @@
+@startuml:sequence:root
+participant contract as con
+participant order_service as  ord
+participant 支付中心 as  smo
+
+
+con->ord:请求保存支付记录
+ord->smo:请求下载账单文件
+ord<--smo:响应账单文件
+ord-->ord:解析账单文件保存到数据库
+con<--ord:[uml:ord1]支付记录已保存数据库
+
+==开启循环对账==
+con->ord:请求对账
+ord-->ord:[uml:ord2]:对比小程序支付记录和支付中心记录
+note left
+一次请求对账50条数据,可配置
+一次对账结束后开启下一次对账
+end note
+con<--ord:对账完成
+note left:返回未对账数据(1000) 为0时,结束对账
+
+con->ord:请求对账
+ord-->ord:对比小程序支付记录和支付中心记录
+@enduml
+
+@startuml:sequence:ord1
+con->ord:请求保存支付记录
+ord->smo:请求下载账单文件
+@enduml
+
+@startuml:sequence:ord2
+con->ord:请求保存支付记录
+ord->smo:请求下载账单文件
+@enduml

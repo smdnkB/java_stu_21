@@ -1,0 +1,12 @@
+spring:
+  application:
+    name: xxlTest
+  xxl:
+    job:
+      enabled: true
+      adminAddresses: http://192.168.0.8:8081/xxl-job-admin/
+      appName: ${spring.application.name}
+      accessToken: default_token
+
+server:
+  port: 8888

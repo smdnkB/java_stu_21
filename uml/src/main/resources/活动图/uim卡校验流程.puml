@@ -1,0 +1,48 @@
+@startuml
+|ui|
+start
+:输入uim卡号;
+split
+ ->点击校验;
+:校验uim卡;
+
+|ui|
+split again
+->点击释放;
+:释放uim卡;
+
+
+end split
+->调用so-service;
+|so-service|
+:uim卡校验接口;
+
+split
+->uim卡校验;
+:校验物品中心卡状态 as a;
+:调oss查卡状态 as b;
+if (a and b) is (no) then
+  :返回预占失败;
+else (yes)
+  :掉oss预占接口;
+endif
+
+split again
+->uim卡释放;
+:掉oss卡释放接口;
+split again
+->uim卡信息获取;
+:掉oss获取卡信息接口;
+ note right
+ 服务内部调用此接口还可以用来
+ 获取uim卡信息（很乱）
+ end note
+ detach
+end split
+
+
+|ui|
+:获取校验结果;
+
+stop
+@enduml

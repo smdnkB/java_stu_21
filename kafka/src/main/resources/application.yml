@@ -1,0 +1,10 @@
+
+# Kafka服务地址
+spring:
+  kafka:
+    bootstrap-servers: 192.168.0.8:9092
+
+
+    consumer:
+
+      group-id: test-group

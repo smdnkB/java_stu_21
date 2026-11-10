@@ -1,0 +1,49 @@
+@startuml
+|ui|
+start
+     -> 点击使用;
+:我的卡券-终端补差抖音券;
+    -> 跳转到;
+:业务加购页面;
+    -> 加购;
+#HotPink:终端补差商品;
+|so_order|
+    ->调用 so_order;
+: 获取客户名下主订单列表;
+        note right
+         根据custId查询
+         客户名下带终端的订单
+         ====
+         <b>ps:默认查两天 可配置</b>
+        end note
+
+|ui|
+:选择补差主订单;
+    note left
+     选择页面有提示终端商品
+     竣工后才会出现在列表
+     ====
+     <b>ps:是否调接口校验一下补差订单是否正确</b>
+    end note
+:完成订单;
+:发送受理提交消息到 so_order>
+
+|so_order|
+:接收消息，开始处理订单<
+->流程中心调用;
+split
+    ->其他流程;
+split again
+    -[#blue]->物品出库流程;
+    #HotPink:处理物品出库;
+    if (订单中是否有补差商品?) then (是)
+      :获取补差商品的主订单属性值;
+      :送物品;
+    else (否)
+      :结束;
+    endif
+split again
+    ->其他流程;
+end split
+stop
+@enduml

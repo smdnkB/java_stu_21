@@ -1,0 +1,19 @@
+@startuml
+participant 前台 as pc
+participant 后台 as svc
+participant 系统管理 as xg
+
+pc --> pc:03页面填写订单联系人信息
+pc -> svc : 校验号码是否可以作为订单联系人
+activate svc
+svc-->svc:判断联系电话是否为客户本人
+svc->xg : 非客户本人号码: 调用系管判断接入号身份
+xg-->svc : 返回接入号身份
+svc-->svc:判断联系电话是否为营业员或者为客户经理
+svc-->svc:查询黑名单表
+
+pc <-- svc : 返回是否可以作为订单联系人
+deactivate  svc
+
+
+@enduml

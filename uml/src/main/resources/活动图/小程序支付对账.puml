@@ -1,0 +1,37 @@
+@startuml
+|contract-order-service|
+start
+->调外系统;
+|rmi|
+:下载账单文件;
+|contract-order-service|
+:解析文件存入对账记录表;
+    note left
+    存数据状态为 1000(未对账)
+    end note
+:查询账记录表数据;
+  note left
+  状态为 1000的更改数据状态为 1001(对账中)
+  ====
+  分批循环查询: 避免对账任务由单个容器执行
+  end note
+
+
+->调用对账接口;
+|order-service|
+:对账接口;
+if (对账成功?) is (yes) then
+  :转储到历史表;
+      note right
+      数据状态更新为 2000(对账完成)
+      end note
+else (no)
+  :记录表 状态改为 2001(对账异常);
+endif
+
+
+
+|contract-order-service|
+
+stop
+@enduml

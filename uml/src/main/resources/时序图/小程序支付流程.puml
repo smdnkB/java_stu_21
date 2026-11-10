@@ -1,0 +1,21 @@
+@startuml
+participant 小程序 as mini
+participant order_service as  ord
+participant 支付中心 as  smo
+participant 微信 as  wx
+
+mini->ord:提交受理接口
+mini<--ord:提交受理完成
+
+mini->ord:创建支付记录(未支付状态)
+ord->smo:创建支付记录
+ord<--smo:创建支付记录完成
+mini<--ord:创建支付记录完成
+
+mini-->mini:弹出微信支付
+mini->wx:付款
+smo<--wx:回调:付款完成
+smo-->ord:回调:付款完成 修改支付记录为已支付
+
+
+@enduml

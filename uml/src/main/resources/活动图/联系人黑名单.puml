@@ -1,0 +1,74 @@
+@startuml 校验联系人号码
+|ui|
+start
+-> 03 填单页面;
+:输入联系人号码;
+-> 点击下一步;
+|so-service|
+:校验联系人接口
+qrystaffCodeAndCustIdByPhone;
+note right
+  任何一步抛异常:
+  校验失败,返回异常信息
+end note
+if (custId 或手机号为空?) then (yes)
+  :校验失败
+  「…不可为空」;
+  |ui|
+  (A)
+  detach
+else (no)
+  |so-service|
+  -[#green]->
+  if (本人手机号?\n先查如意,查不到再查现网) then (yes)
+    -[#green]->
+    :校验通过;
+    |ui|
+    -[#green]->
+    (A)
+    detach
+  else (no)
+    |so-service|
+    -[#green]->
+    if (开关 BLACK_PHONE_NEW_SWITCH = Y?) then (yes)
+      -[#green]->
+      if (请求头有 regionId?) then (no)
+        :校验失败
+        「请求头regionId为空」;
+        |ui|
+        (A)
+        detach
+      else (yes)
+        |so-service|
+        -[#green]->
+        if (营业员手机号?) then (yes)
+          :校验失败
+          「…号码为营业员号码」;
+          |ui|
+          (A)
+          detach
+        else (no)
+        endif
+      endif
+    else (no)
+    endif
+    |so-service|
+    -[#green]->
+    if (在黑名单?) then (yes)
+      :校验失败
+      「…不允许作为联系人」;
+      |ui|
+      (A)
+      detach
+    else (no)
+      |so-service|
+      -[#green]->
+      :校验通过;
+    endif
+  endif
+endif
+|ui|
+-[#green]->
+(A)
+end
+@enduml

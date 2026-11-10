@@ -1,0 +1,51 @@
+spring:
+#  datasource: # 使用 shardingJDBC 的话 不需要配置独立数据源,配也不生效
+#    driver-class-name: com.mysql.cj.jdbc.Driver
+#    url: jdbc:mysql://192.168.0.8:3307/shardjdbc_1?serverTimezone=UTC&characterEncoding=UTF-8
+#    username: root
+#    password: 123456
+  application:
+    name: shardingJDBC
+  shardingsphere: # 不要换成 sharding-sphere
+    datasource:
+      names: m1,m0
+      m0:
+        type: com.alibaba.druid.pool.DruidDataSource
+        driverClassName: com.mysql.cj.jdbc.Driver
+        url: jdbc:mysql://192.168.0.8:3307/shardjdbc_1?serverTimezone=UTC&characterEncoding=UTF-8
+        username: root
+        password: 123456
+      m1:
+        type: com.alibaba.druid.pool.DruidDataSource
+        driverClassName: com.mysql.cj.jdbc.Driver
+        url: jdbc:mysql://192.168.0.8:3307/shardjdbc_2?serverTimezone=UTC&characterEncoding=UTF-8
+        username: root
+        password: 123456
+    rules:
+      sharding:
+        tables:
+          course: # 定义分表的 表名  ps: 如果分库分表不生效,一定检查 表名是否和这里定义的一致
+            actual-data-nodes: m$->{0..1}.course_$->{1..2} # 怎么分的库和表 m1|m2库下 course_1|course_2 表
+            key-generate-strategy:
+              column: cid # 指定哪个字段当主键, 会为这个字段自动生成分布式主键值
+              key-generator-name: snowflake # 生成主键的算法 自己指定, 下面要为这个算法配规则
+            database-strategy: # 分库配置
+              standard:
+                sharding-column: cid # 按哪个字段进行分库
+                sharding-algorithm-name: course_db_inline # 分库算法 自己指定, 下面要为这个算法配规则
+            table-strategy: # 分表配置
+              standard:
+                sharding-column: cid # 按哪个字段进行分表
+                sharding-algorithm-name: course_tab_inline # 分表算法 自己指定, 下面要为这个算法配规则
+        key-generators:
+          snowflake:
+            type: SNOWFLAKE
+        sharding-algorithms:
+          course_db_inline:
+            type: inline  # 表达式
+            props:
+              algorithm-expression: m$->{ cid % 2 } # 取模分库 # 两个库,对 2 取模
+          course_tab_inline:
+            type: inline  # 表达式分表
+            props:
+              algorithm-expression: course_$->{ cid % 2 + 1 } # 表达式分表

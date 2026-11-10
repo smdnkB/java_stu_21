@@ -1,0 +1,31 @@
+@startuml
+!define RECTANGLE class
+
+' 定义前端层组件
+package "Frontend" {
+    RECTANGLE WebApp
+    RECTANGLE MobileApp
+    WebApp -[hidden]-> MobileApp
+}
+
+' 定义后端层组件
+package "Backend" {
+    RECTANGLE API
+    RECTANGLE Service
+    RECTANGLE AuthService
+    API --> Service : uses
+    Service --> AuthService : authenticates
+}
+
+' 定义数据库层组件
+package "Database" {
+    RECTANGLE DBServer
+    RECTANGLE Cache
+    DBServer --> Cache : caches data
+}
+
+' 前端与后端的关系
+WebApp --> API : calls API
+MobileApp --> API : calls API
+
+@enduml
